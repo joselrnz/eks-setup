@@ -58,3 +58,58 @@ resource "aws_iam_role_policy_attachment" "codebuild_AWSCodeBuildDeveloperAccess
   policy_arn = "arn:aws:iam::aws:policy/AWSCodeBuildDeveloperAccess"
   role       = aws_iam_role.codebuild.name
 }
+
+
+
+
+resource "aws_iam_role" "lambda_role" {
+  name = "lambda-eks-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      }
+    }]
+  })
+}
+
+resource "aws_iam_policy" "eks_access_policy" {
+  name        = "LambdaEKSAccessPolicy"
+  description = "Policy to allow Lambda access to EKS"
+  
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "eks:DescribeCluster",
+          "eks:ListClusters",
+          "eks:DescribeNodegroup"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+      {
+        Action = [
+          "sts:AssumeRole"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "eks_policy_attach" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = aws_iam_policy.eks_access_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "basic_lambda" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}

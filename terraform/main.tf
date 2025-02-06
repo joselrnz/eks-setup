@@ -33,17 +33,17 @@ module "eks" {
 
 module "codebuild" {
   source             = "./modules/codebuild"
-  project_name       = "my-ci-cd-project"
-  description        = "CI/CD project for my application"
+  project_name       = "codebuild"
+  description        = "CI/CD"
   codebuild_role_arn = module.iam.codebuild_role_arn
-  github_repo_url    = "https://github.com/your-org/your-repo"
+  github_repo_url    = ""
   buildspec          = "buildspec.yml"
 }
 
 module "ec2_argo" {
   source         = "./modules/ec2-argo"
-  ami            = "ami-0abcdef1234567890"  # Replace with a valid AMI (e.g., Amazon Linux 2)
-  instance_type  = "t3a.small"
+  ami            = "ami-0abcdef1234567890"
+  instance_type  = "t3.medium"
   key_name       = var.key_name
   subnet_id      = module.vpc.public_subnet_id
   vpc_id         = module.vpc.vpc_id
